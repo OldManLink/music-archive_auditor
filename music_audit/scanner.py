@@ -12,7 +12,9 @@ class AudioFile:
     extension: str
     size_bytes: int
     modified_time: datetime
-
+    @property
+    def size_mb(self) -> float:
+        return self.size_bytes / (1024 * 1024)
 
 def scan_audio_files(root: Path) -> list[AudioFile]:
     audio_files: list[AudioFile] = []

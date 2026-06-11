@@ -27,11 +27,14 @@ def main() -> int:
         findings.extend(check_apple_survivor_track(album))
 
     for finding in findings:
-        print(
-            f"[{finding.score}] "
-            f"{finding.category}: "
-            f"{finding.album.path}"
-        )
+        print(f"[{finding.score}] {finding.category}: {finding.album.path}")
+
+        if finding.category == "single_track_album":
+            file = finding.album.files[0]
+
+            print(f"    file: {file.path.name}")
+            print(f"    size: {file.size_mb:.1f} MB")
+            print(f"    modified: {file.modified_time}")
 
     print(f"Finished in {timer.elapsed:.1f} seconds")
     print(f"Found {len(audio_files)} audio files")
