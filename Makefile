@@ -6,4 +6,4 @@ test:
 	$(PYTHON) -m pytest
 
 run:
-	python3 -m music_audit $(DIR)
+	$(PYTHON) -m music_audit $(DIR)
