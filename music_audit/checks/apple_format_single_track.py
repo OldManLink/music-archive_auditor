@@ -2,7 +2,7 @@ from music_audit.findings import Finding
 from music_audit.grouping import Album
 
 
-def check_apple_survivor_track(album: Album) -> list[Finding]:
+def check_apple_format_single_track_album(album: Album) -> list[Finding]:
     if album.audio_file_count != 1:
         return []
 
@@ -11,15 +11,12 @@ def check_apple_survivor_track(album: Album) -> list[Finding]:
     if file.extension != ".m4a":
         return []
 
-    if file.path.stem.lower() != album.path.name.lower():
-        return []
-
     return [
         Finding(
             severity="CRITICAL",
-            category="apple_survivor_track",
+            category="apple_format_single_track_album",
             album=album,
-            message="Single surviving m4a title track",
-            score=90,
+            message="Single-track album with surviving Apple-format file",
+            score=95,
         )
     ]

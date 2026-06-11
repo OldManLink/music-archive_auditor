@@ -6,7 +6,7 @@ from datetime import datetime
 from music_audit.scanner import scan_audio_files
 from music_audit.grouping import group_albums
 from music_audit.checks.single_track import check_single_track_album
-from music_audit.checks.apple_survivor import check_apple_survivor_track
+from music_audit.checks.apple_format_single_track import check_apple_format_single_track_album
 from music_audit.analysis.modification_clusters import (
     count_single_track_modification_dates,
 )
@@ -22,11 +22,19 @@ def main() -> int:
     audio_files = scan_audio_files(root)
     albums = group_albums(audio_files)
 
+    print(f"Scanned {len(audio_files)} audio files")
+    print(f"Grouped {len(albums)} albums")
+    print("Checking albums...")
+
     findings = []
 
-    for album in albums:
+    for index, album in enumerate(albums, start=1):
         findings.extend(check_single_track_album(album))
-        findings.extend(check_apple_survivor_track(album))
+        findings.extend(check_apple_format_single_track_album(album))
+
+        if index % 50 == 0:
+            print(f"  checked {index} / {len(albums)} albums")
+    print(f"  checked {len(albums)} / {len(albums)} albums")
 
     for finding in findings:
         print(f"[{finding.score}] {finding.category}: {finding.album.path}")
@@ -37,7 +45,7 @@ def main() -> int:
             print(f"    file: {file.path.name}")
             print(f"    size: {file.size_mb:.1f} MB")
             print(f"    modified: {file.modified_time}")
-            
+
     print()
     print("Single-track album modification dates")
 
