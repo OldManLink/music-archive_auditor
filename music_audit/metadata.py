@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
-
 from mutagen import File
-
 
 @dataclass(frozen=True)
 class AudioMetadata:
@@ -12,7 +10,8 @@ class AudioMetadata:
     album: Optional[str]
     track_number: Optional[int]
     track_total: Optional[int]
-
+    encoder: Optional[str]
+    sample_rate: Optional[int]
 
 def read_metadata(path: Path) -> AudioMetadata:
     tags = File(path, easy=True)
@@ -22,25 +21,23 @@ def read_metadata(path: Path) -> AudioMetadata:
             title=None,
             artist=None,
             album=None,
+            track_number=None,
+            track_total=None,
+            encoder=None,
+            sample_rate=None,
         )
 
     track_number, track_total = parse_track_number(tags.get("tracknumber"))
+
     return AudioMetadata(
         title=first_value(tags.get("title")),
         artist=first_value(tags.get("artist")),
         album=first_value(tags.get("album")),
         track_number=track_number,
         track_total=track_total,
+        encoder=first_value(tags.get("encodedby")) or first_value(tags.get("encoder")),
+        sample_rate=getattr(tags.info, "sample_rate", None),
     )
-
-def first_int(values) -> Optional[int]:
-    if not values:
-        return None
-
-    try:
-        return int(str(values[0]).split("/")[0])
-    except ValueError:
-        return None
 
 def first_value(values) -> Optional[str]:
     if not values:

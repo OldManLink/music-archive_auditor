@@ -49,23 +49,9 @@ def main() -> int:
     print("Reading metadata...")
     metadata_count = 0
     metadata_by_path = {}
-    track_samples = []
     for audio_file in audio_files:
         metadata = read_metadata(audio_file.path)
         metadata_by_path[audio_file.path] = metadata
-
-        if (
-            metadata.track_number is not None
-            and len(track_samples) < 10
-        ):
-            track_samples.append(
-                (
-                 audio_file.path.name,
-                 metadata.track_number,
-                 metadata.track_total,
-                )
-            )
-
         metadata_count += 1
 
         if (
@@ -78,16 +64,6 @@ def main() -> int:
         f"Metadata probe read {metadata_count} files "
         f"in {metadata_timer.elapsed:.1f} seconds"
     )
-
-    if track_samples:
-        print("Track number samples")
-
-        for filename, track_number, track_total in track_samples:
-            if track_total is None:
-                print(f"    {filename}: track {track_number}")
-            else:
-                print(f"    {filename}: track {track_number} of {track_total}")
-        print()
 
     albums = group_albums(audio_files)
     print(f"Grouped {len(albums)} albums")
@@ -122,6 +98,9 @@ def main() -> int:
                         f"    metadata: track "
                         f"{metadata.track_number} of {metadata.track_total}"
                     )
+                if metadata.encoder is not None:
+                    print(f"    encoder: {metadata.encoder}")
+                print(f"    sample rate: {metadata.sample_rate} Hz")
 
             if file.extension == ".m4a":
                 print("    suspicious: apple-format survivor")
@@ -144,9 +123,25 @@ def main() -> int:
             print("    non-mp3 files:")
 
             for file in non_mp3_files:
+                metadata = metadata_by_path.get(file.path)
                 print(f"        {file.path.name}")
                 print(f"            size: {file.size_mb:.1f} MB")
                 print(f"            modified: {file.modified_time}")
+
+
+                if metadata is not None and metadata.track_number is not None:
+                    if metadata.track_total is None:
+                        print(f"            metadata: track {metadata.track_number}")
+                    else:
+                        print(
+                            f"            metadata: track "
+                            f"{metadata.track_number} of {metadata.track_total}"
+                        )
+                    print(f"            album: {metadata.album}")
+                    print(f"            artist: {metadata.artist}")
+                    if metadata.encoder is not None:
+                        print(f"            encoder: {metadata.encoder}")
+                    print(f"            sample rate: {metadata.sample_rate} Hz")
 
     clusters = count_single_track_modification_dates(albums)
     if clusters:
