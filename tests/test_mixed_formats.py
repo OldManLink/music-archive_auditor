@@ -30,10 +30,7 @@ def test_detects_album_with_mixed_audio_formats(tmp_path: Path):
     assert findings[0].severity == "WARNING"
     assert findings[0].category == "mixed_audio_formats"
     assert findings[0].score == 40
-    assert findings[0].message == (
-        "Album contains multiple audio formats: "
-        ".m4a=1, .mp3=1"
-    )
+    assert findings[0].message == "Album contains multiple audio formats"
 
 
 def test_album_with_only_mp3_files_is_not_detected(tmp_path: Path):

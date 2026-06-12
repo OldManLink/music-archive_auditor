@@ -7,26 +7,23 @@ from datetime import datetime
 from music_audit.scanner import scan_audio_files
 from music_audit.grouping import group_albums
 from music_audit.checks.single_track import check_single_track_album
-from music_audit.checks.apple_format_single_track import check_apple_format_single_track_album
 from music_audit.analysis.modification_clusters import count_single_track_modification_dates
 from music_audit.checks.mixed_formats import check_mixed_audio_formats
 from music_audit.formatting import format_bytes
 from music_audit.metadata import read_metadata
 
 def main() -> int:
+    METADATA_PROGRESS_INTERVAL = 500
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument(
         "root",
         help="Music root directory",
     )
-
     parser.add_argument(
         "--limit",
         type=int,
     )
-
     args = parser.parse_args()
 
     timer = Timer()
@@ -58,15 +55,13 @@ def main() -> int:
         metadata_count += 1
 
         if (
-                metadata_count % 100 == 0
-                or metadata_count == len(audio_files)
+            metadata_count % METADATA_PROGRESS_INTERVAL == 0
+            or metadata_count == len(audio_files)
         ):
-            print(
-                f"  read {metadata_count} / {len(audio_files)} files"
-            )
+            print(f"  read {metadata_count} / {len(audio_files)} files")
 
     print(
-        f"Read metadata from {metadata_count} files "
+        f"Metadata probe read {metadata_count} files "
         f"in {metadata_timer.elapsed:.1f} seconds"
     )
 
@@ -78,7 +73,6 @@ def main() -> int:
 
     for index, album in enumerate(albums, start=1):
         findings.extend(check_single_track_album(album))
-        findings.extend(check_apple_format_single_track_album(album))
         findings.extend(check_mixed_audio_formats(album))
 
         if index % 50 == 0:
@@ -95,10 +89,14 @@ def main() -> int:
             print(f"    size: {file.size_mb:.1f} MB")
             print(f"    modified: {file.modified_time}")
 
+            if file.extension == ".m4a":
+                print("    suspicious: apple-format survivor")
+
         if finding.category == "mixed_audio_formats":
-            print(
-                f"    formats: "
-                f"{finding.message.removeprefix('Album contains multiple audio formats: ')}"
+            mp3_count = sum(
+                1
+                for file in finding.album.files
+                if file.extension == ".mp3"
             )
 
             non_mp3_files = [
@@ -107,6 +105,8 @@ def main() -> int:
                 if file.extension != ".mp3"
             ]
 
+            print(f"    {mp3_count} mp3 files")
+            print(f"    {len(non_mp3_files)} non-mp3 files")
             print("    non-mp3 files:")
 
             for file in non_mp3_files:

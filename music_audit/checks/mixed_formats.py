@@ -9,17 +9,13 @@ def check_mixed_audio_formats(album: Album) -> list[Finding]:
 
     if len(format_counts) <= 1:
         return []
-    summary = ", ".join(
-        f"{extension}={count}"
-        for extension, count in sorted(format_counts.items())
-    )
 
     return [
         Finding(
             severity="WARNING",
             category="mixed_audio_formats",
             album=album,
-            message=f"Album contains multiple audio formats: {summary}",
+            message=f"Album contains multiple audio formats",
             score=40,
         )
     ]
