@@ -6,9 +6,12 @@ from music_audit.timing import Timer
 from datetime import datetime
 from music_audit.scanner import scan_audio_files
 from music_audit.grouping import group_albums
+
 from music_audit.checks.single_track import check_single_track_album
-from music_audit.analysis.modification_clusters import count_single_track_modification_dates
 from music_audit.checks.mixed_formats import check_mixed_audio_formats
+from music_audit.checks.incomplete_album import check_incomplete_album_by_metadata
+
+from music_audit.analysis.modification_clusters import count_single_track_modification_dates
 from music_audit.formatting import format_bytes
 from music_audit.metadata import read_metadata
 
@@ -74,7 +77,8 @@ def main() -> int:
     for index, album in enumerate(albums, start=1):
         findings.extend(check_single_track_album(album))
         findings.extend(check_mixed_audio_formats(album))
-
+        findings.extend(check_incomplete_album_by_metadata(album, metadata_by_path)
+)
         if index % 50 == 0:
             print(f"  checked {index} / {len(albums)} albums")
     print(f"  checked {len(albums)} / {len(albums)} albums")
@@ -104,6 +108,17 @@ def main() -> int:
 
             if file.extension == ".m4a":
                 print("    suspicious: apple-format survivor")
+
+        if finding.category == "incomplete_album_by_metadata":
+            print(
+                f"    expected {finding.expected_tracks} tracks, "
+                f"found {finding.found_tracks}"
+            )
+
+            print(
+                f"    missing: "
+                f"{finding.expected_tracks - finding.found_tracks} tracks"
+            )
 
         if finding.category == "mixed_audio_formats":
             mp3_count = sum(

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from music_audit.grouping import Album
 
@@ -8,5 +9,7 @@ class Finding:
     severity: str
     category: str
     album: Album
-    message: str
     score: int
+    message: Optional[str] = None
+    expected_tracks: Optional[int] = None
+    found_tracks: Optional[int] = None
