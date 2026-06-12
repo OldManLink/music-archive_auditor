@@ -11,6 +11,7 @@ from music_audit.checks.apple_format_single_track import check_apple_format_sing
 from music_audit.analysis.modification_clusters import count_single_track_modification_dates
 from music_audit.checks.mixed_formats import check_mixed_audio_formats
 from music_audit.formatting import format_bytes
+from music_audit.metadata import read_metadata
 
 def main() -> int:
 
@@ -42,9 +43,34 @@ def main() -> int:
         root,
         limit=args.limit,
     )
-    albums = group_albums(audio_files)
 
+    total_size = sum(file.size_bytes for file in audio_files)
     print(f"Scanned {len(audio_files)} audio files")
+    print(f"Total size: {format_bytes(total_size)}")
+
+    metadata_timer = Timer()
+    print("Reading metadata...")
+    metadata_count = 0
+
+    for audio_file in audio_files:
+        read_metadata(audio_file.path)
+
+        metadata_count += 1
+
+        if (
+                metadata_count % 100 == 0
+                or metadata_count == len(audio_files)
+        ):
+            print(
+                f"  read {metadata_count} / {len(audio_files)} files"
+            )
+
+    print(
+        f"Read metadata from {metadata_count} files "
+        f"in {metadata_timer.elapsed:.1f} seconds"
+    )
+
+    albums = group_albums(audio_files)
     print(f"Grouped {len(albums)} albums")
     print("Checking albums...")
 
@@ -99,8 +125,6 @@ def main() -> int:
     print(f"Finished in {timer.elapsed:.1f} seconds")
     print(f"Found {len(audio_files)} audio files")
     print(f"Found {len(albums)} albums")
-
-    total_size = sum(file.size_bytes for file in audio_files)
     print(f"Total size: {format_bytes(total_size)}")
 
     return 0
