@@ -1,6 +1,11 @@
 # Live Run 002
 
 Date: 2026-06-11
+Command:
+
+```bash
+.venv/bin/python3 -m music_audit /Volumes/media/Music
+```
 
 ## Purpose
 

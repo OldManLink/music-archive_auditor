@@ -7,11 +7,9 @@ from datetime import datetime
 from music_audit.scanner import scan_audio_files
 from music_audit.grouping import group_albums
 
-from music_audit.checks.single_track import check_single_track_album
 from music_audit.checks.mixed_formats import check_mixed_audio_formats
 from music_audit.checks.incomplete_album import check_incomplete_album_by_metadata
 
-from music_audit.analysis.modification_clusters import count_single_track_modification_dates
 from music_audit.formatting import format_bytes
 from music_audit.metadata import read_metadata
 
@@ -75,39 +73,15 @@ def main() -> int:
     findings = []
 
     for index, album in enumerate(albums, start=1):
-        findings.extend(check_single_track_album(album))
         findings.extend(check_mixed_audio_formats(album))
-        findings.extend(check_incomplete_album_by_metadata(album, metadata_by_path)
-)
+        findings.extend(check_incomplete_album_by_metadata(album, metadata_by_path))
+
         if index % 50 == 0:
             print(f"  checked {index} / {len(albums)} albums")
     print(f"  checked {len(albums)} / {len(albums)} albums")
 
     for finding in findings:
         print(f"[{finding.score}] {finding.category}: {finding.album.path}")
-
-        if finding.category == "single_track_album":
-            file = finding.album.files[0]
-            metadata = metadata_by_path.get(file.path)
-
-            print(f"    file: {file.path.name}")
-            print(f"    size: {file.size_mb:.1f} MB")
-            print(f"    modified: {file.modified_time}")
-
-            if metadata is not None and metadata.track_number is not None:
-                if metadata.track_total is None:
-                    print(f"    metadata: track {metadata.track_number}")
-                else:
-                    print(
-                        f"    metadata: track "
-                        f"{metadata.track_number} of {metadata.track_total}"
-                    )
-                if metadata.encoder is not None:
-                    print(f"    encoder: {metadata.encoder}")
-                print(f"    sample rate: {metadata.sample_rate} Hz")
-
-            if file.extension == ".m4a":
-                print("    suspicious: apple-format survivor")
 
         if finding.category == "incomplete_album_by_metadata":
             print(
@@ -158,21 +132,12 @@ def main() -> int:
                         print(f"            encoder: {metadata.encoder}")
                     print(f"            sample rate: {metadata.sample_rate} Hz")
 
-    clusters = count_single_track_modification_dates(albums)
-    if clusters:
-        print()
-        print("Single-track album modification dates")
-
-        for date, count in count_single_track_modification_dates(albums):
-            print(f"{date}: {count}")
-
     print(f"Finished in {timer.elapsed:.1f} seconds")
     print(f"Found {len(audio_files)} audio files")
     print(f"Found {len(albums)} albums")
     print(f"Total size: {format_bytes(total_size)}")
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
