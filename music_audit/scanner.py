@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-
+from typing import Optional
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".m4p", ".aac", ".flac", ".wav"}
 
@@ -16,7 +16,7 @@ class AudioFile:
     def size_mb(self) -> float:
         return self.size_bytes / (1024 * 1024)
 
-def scan_audio_files(root: Path) -> list[AudioFile]:
+def scan_audio_files(root: Path, limit: Optional[int] = None) -> list[AudioFile]:
     audio_files: list[AudioFile] = []
 
     for path in root.rglob("*"):
@@ -36,5 +36,7 @@ def scan_audio_files(root: Path) -> list[AudioFile]:
                 modified_time=datetime.fromtimestamp(stat.st_mtime),
             )
         )
+        if limit is not None and len(audio_files) >= limit:
+            return audio_files
 
     return sorted(audio_files, key=lambda audio_file: audio_file.path)
