@@ -8,10 +8,10 @@ from music_audit.scanner import scan_audio_files
 from music_audit.grouping import group_albums
 
 from music_audit.checks.mixed_formats import check_mixed_audio_formats
-from music_audit.checks.incomplete_album import check_incomplete_album_by_metadata
+from music_audit.checks.album_track_count import check_album_track_count_by_metadata
 from music_audit.checks.metadata_consistency import check_metadata_album_mismatch
 
-from music_audit.formatting import format_bytes
+from music_audit.formatting import (format_bytes, pluralize)
 from music_audit.metadata import read_metadata
 
 def main() -> int:
@@ -75,7 +75,7 @@ def main() -> int:
 
     for index, album in enumerate(albums, start=1):
         findings.extend(check_mixed_audio_formats(album))
-        findings.extend(check_incomplete_album_by_metadata(album, metadata_by_path))
+        findings.extend(check_album_track_count_by_metadata(album, metadata_by_path))
         findings.extend(check_metadata_album_mismatch(album, metadata_by_path))
 
         if index % 50 == 0:
@@ -85,16 +85,14 @@ def main() -> int:
     for finding in findings:
         print(f"[{finding.score}] {finding.category}: {finding.album.path}")
 
-        if finding.category == "incomplete_album_by_metadata":
+        if finding.category == "album_track_count_by_metadata":
             print(
                 f"    expected {finding.expected_tracks} tracks, "
                 f"found {finding.found_tracks}"
             )
 
-            print(
-                f"    missing: "
-                f"{finding.expected_tracks - finding.found_tracks} tracks"
-            )
+            difference = finding.expected_tracks - finding.found_tracks
+            print(f'    { "extra" if difference < 0 else "missing" }: {abs(difference)} {pluralize(difference, "track")}')
 
         if finding.category == "metadata_album_mismatch":
             first_file = finding.album.files[0]

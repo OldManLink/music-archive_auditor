@@ -5,7 +5,7 @@ from music_audit.grouping import Album
 from music_audit.metadata import AudioMetadata
 
 
-def check_incomplete_album_by_metadata(
+def check_album_track_count_by_metadata(
         album: Album,
         metadata_by_path: dict[Path, AudioMetadata],
 ) -> list[Finding]:
@@ -26,13 +26,13 @@ def check_incomplete_album_by_metadata(
     expected_total = max(track_totals)
     actual_total = len(album.files)
 
-    if actual_total >= expected_total:
+    if actual_total == expected_total:
         return []
 
     return [
         Finding(
             severity="CRITICAL",
-            category="incomplete_album_by_metadata",
+            category="album_track_count_by_metadata",
             album=album,
             expected_tracks=expected_total,
             found_tracks=actual_total,
