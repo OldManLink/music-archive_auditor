@@ -131,6 +131,8 @@ def main() -> int:
                     if metadata.encoder is not None:
                         print(f"            encoder: {metadata.encoder}")
                     print(f"            sample rate: {metadata.sample_rate} Hz")
+                    if metadata.bitrate is not None:
+                        print(f"            bitrate: {metadata.bitrate // 1000} kbps")
 
     print(f"Finished in {timer.elapsed:.1f} seconds")
     print(f"Found {len(audio_files)} audio files")

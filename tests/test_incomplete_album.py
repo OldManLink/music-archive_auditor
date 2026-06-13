@@ -31,6 +31,7 @@ def test_reports_album_with_missing_tracks():
             track_total=8,
             encoder=None,
             sample_rate=44100,
+            bitrate=128000,
         )
     }
 
@@ -71,6 +72,7 @@ def test_does_not_report_complete_album():
             track_total=8,
             encoder=None,
             sample_rate=44100,
+            bitrate=128000,
         )
 
     album = Album(

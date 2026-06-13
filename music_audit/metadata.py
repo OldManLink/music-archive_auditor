@@ -12,6 +12,7 @@ class AudioMetadata:
     track_total: Optional[int]
     encoder: Optional[str]
     sample_rate: Optional[int]
+    bitrate: Optional[int]
 
 def read_metadata(path: Path) -> AudioMetadata:
     tags = File(path, easy=True)
@@ -25,6 +26,7 @@ def read_metadata(path: Path) -> AudioMetadata:
             track_total=None,
             encoder=None,
             sample_rate=None,
+            bitrate=None,
         )
 
     track_number, track_total = parse_track_number(tags.get("tracknumber"))
@@ -37,6 +39,7 @@ def read_metadata(path: Path) -> AudioMetadata:
         track_total=track_total,
         encoder=first_value(tags.get("encodedby")) or first_value(tags.get("encoder")),
         sample_rate=getattr(tags.info, "sample_rate", None),
+        bitrate=getattr(tags.info, "bitrate", None),
     )
 
 def first_value(values) -> Optional[str]:
