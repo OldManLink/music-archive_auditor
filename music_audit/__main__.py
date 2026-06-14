@@ -2,6 +2,9 @@ from pathlib import Path
 import sys
 
 import argparse
+
+from music_audit.checks.duplicate_track_numbers import check_duplicate_track_numbers
+from music_audit.findings import Finding
 from music_audit.timing import Timer
 from datetime import datetime
 from music_audit.scanner import scan_audio_files
@@ -76,6 +79,7 @@ def main() -> int:
     for index, album in enumerate(albums, start=1):
         findings.extend(check_mixed_audio_formats(album))
         findings.extend(check_album_track_count_by_metadata(album, metadata_by_path))
+        findings.extend(check_duplicate_track_numbers(album, metadata_by_path))
         findings.extend(check_metadata_album_mismatch(album, metadata_by_path))
 
         if index % 50 == 0:
@@ -93,6 +97,10 @@ def main() -> int:
 
             difference = finding.expected_tracks - finding.found_tracks
             print(f'    { "extra" if difference < 0 else "missing" }: {abs(difference)} {pluralize(difference, "track")}')
+
+        if finding.category == "duplicate_track_numbers":
+            print(f'    {finding.message}')
+
 
         if finding.category == "metadata_album_mismatch":
             first_file = finding.album.files[0]
